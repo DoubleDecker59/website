@@ -82,7 +82,11 @@
           <a id = "files" class="nav-link {{active4}}" {{#unless loggedIn}} style="display: none" {{/unless}} href="files">Files</a>
         </li>
          <li class="nav-item">
-          <a id = "Edit"class="nav-link {{active5}}"{{#unless loggedIn}} style="display: none;" {{/unless}} href="Edit">Edit</a>
+          <a id = "Edit"class="drop-down {{active5}}"{{#unless loggedIn}} style="display: none;" {{/unless}} href="#">Edit</a>
+	  <ul>
+              <li lass="nav-item"><a href="edit">Edit User</a></li>
+	      <li class="nav-item"><a href="new">Add User</a></li>
+            </ul>
         </li> 
           <li class="nav-item">
           <a id = "user" class="nav-link {{active6}}" {{#unless loggedIn}} style="display: none;" {{/unless}}href="user">User</a>
@@ -90,7 +94,7 @@
            <li class="nav-item">
           <a id = "Games"class="nav-link {{active7}}" href="games">Games</a>
           <ul>
-              <lic lass="nav-link"><a href="space">Space Shooter</a></li>
+              <li lass="nav-item"><a href="space">Space Shooter</a></li>
               <li class="drop-down"><a href="#">Unity Games</a>
                 <ul>
                   <li class="nav-item"><a href="farm">Farming Simulator</a></li>
