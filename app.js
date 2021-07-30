@@ -331,4 +331,4 @@ app.get('*', function(req, res){
         res.status(404).send('Error 404: Unknown Page/Resource not found');
   });
 
-app.listen(3000,"192.168.1.13"); 
+app.listen(3000, function() { console.log("Listening on port 3000")}); 
