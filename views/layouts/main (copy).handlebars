@@ -1,0 +1,47 @@
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Matt Militello</title>
+    <div class = "card" style="text-align: right; background-color: ghostwhite;"><h1 class = "col-8">Matt's Personal Website</h1></div>
+    
+    <ul class="nav nav-tabs justify-content-center" style="background-color:whitesmoke;">
+        <li class="nav-item">
+          <a id = "Home"class="nav-link {{active4}}" href="home">Home</a>
+        </li>
+        <li class="nav-item">
+          <a id = "Games"class="nav-link {{active5}}" href="games">Games</a>
+        </li>
+        <li class="nav-item">
+          <a id = "Message"class="nav-link {{active7}}" href="message">Message</a>
+        </li>
+        <li class="nav-item">
+          <a id = "files" class="nav-link {{active6}}" {{#if loggedIn}} style="display: none" {{/if}} href="files">Files</a>
+        </li>
+        <li class="nav-item">
+          <a id = "login" class="nav-link {{active2}}" {{#if loggedIn}} style="display: none" {{/if}} href="login">Login</a>
+        </li>
+        <li class="nav-item">
+          <a id = "user" class="nav-link {{active}}" {{#unless loggedIn}} style="display: none;" {{/unless}}href="user">My Account</a>
+        </li>
+        <li class="nav-item">
+          <a id = "new" class="nav-link {{active3}}"{{#unless loggedIn}} style="display: none;" {{/unless}} href="new">New</a>
+        </li>
+        <li class="nav-item">
+          <a id = "Logout"{{#unless loggedIn}} style="display: none;" {{/unless}} class="nav-link" href="logout">Logout</a>
+        </li>
+      </ul>
+  </head>
+<div class="alert alert-{{alert.level}}" role="alert" {{#unless alert}}
+ style="display: none;" {{/unless}}>
+  <h4 class="alert-heading">{{alert.title}}</h4>
+  <p>{{alert.message}}</p>
+</div>
+{{{body}}}
+   <div id="container" style="text-align: right; background-color: slategrey;" class="footer fixed-bottom card">
+      <p class="col-11" >Created by: Matt Militello</p>
+      </div>
