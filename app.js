@@ -34,30 +34,84 @@ const data = new conf();
 let loginError;
 let update = false;
 app.use(express.json()); 
- 
+ //REDIRECTS
 app.use(express.urlencoded({   extended: false })); 
 app.get('/', (reg,res) => {
-    res.redirect('/user/login'); 
+    res.redirect('/home'); 
 }); 
 app.get('/user', (reg,res) => {
-    res.redirect('/user/user'); 
+    res.redirect('/user'); 
 }); 
-app.get('/login', (reg,res) => {
-    res.redirect('/user/login'); 
-}); 
-app.get('/new', (reg,res) => {
-    res.redirect('/user/new'); 
-}); 
-app.get('/user/logout', (req,res) => {
+app.get('/logout', (req,res) => {
     req.session.destroy();
-    res.redirect('/user/login')
+    res.redirect('/home')
 }); 
-app.get('/user/user', (req,res) => {
+app.get('/user', (req,res) => {
     res.redirect('/user/' + req.session.userId)
 });
+//SIMPLE ROUTES - NO ACCESS REQUIRED
+app.route('/home')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('home', {
+  active1:'active',
+      })          
+}); 
+app.route('/games')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('games', {
+  active7:'active',
+      })          
+}); 
+app.route('/games/space')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('space', {
+  active7:'active',
+      })          
+}); 
+app.route('/games/farm')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('farm', {
+  active7:'active',
+      })          
+}); 
+app.route('/games/tower')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('tower', {
+  active7:'active',
+      })          
+}); 
+app.route('/about')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('about', {
+  active2:'active',
+      })          
+}); 
+app.route('/files')  
 
+.get((req, res) => { 
+    const userId = req.session.userId;
+    if(userId === undefined) {
+       loginError = true; 
+       res.redirect('/login');
+    }
+    else {
+        res.render('edit', {
+            loggedIn: {
+            },
+            active4:'active'
+        })
+    }
+   
+});
 
-app.route('/user/login')  
+//COMPLICATED ROUTES - ACCESS OF SOME KIND REQUIRED
+app.route('/login')  
 .get((req, res) => { 
  const userId = req.session.userId;
  if(userId === undefined) {
@@ -69,13 +123,13 @@ app.route('/user/login')
                     title: 'Authenitcation Error',
                     message: 'You must be logged in to create a new user'
                 },
-            active2:'active'
+            active3:'active'
         })
     }
     else {
         res.status(200);
         res.render('login', {
-            active2:'active',
+            active3:'active',
         })
     }
  }
@@ -95,7 +149,7 @@ app.route('/user/login')
                         title: 'Login Error',
                         message: 'Incorrect Username or Password'
                     },
-                active2:'active'
+                active3:'active'
             })
         }
         else if(user.password !== req.body.password) {
@@ -116,7 +170,7 @@ app.route('/user/login')
         }
        
 }); 
-app.route('/user/new')  
+app.route('/new')  
 
 .get((req, res) => { 
     const userId = req.session.userId;
@@ -134,7 +188,7 @@ app.route('/user/new')
                     title: 'Account Created',
                     message: 'You have successfully created your account'
                 },
-            active3:'active'
+            active5:'active'
         })
     }
     else {
@@ -142,7 +196,7 @@ app.route('/user/new')
         res.render('new', {
             loggedIn: {
             },
-            active3:'active'
+            active5:'active'
         })
     }
    
@@ -162,7 +216,7 @@ app.route('/user/new')
                         title: 'Password Error',
                         message: 'Passwords do not match'
                     },
-                active3:'active'
+                active5:'active'
             })
         }
         else if (user !== undefined){
@@ -174,7 +228,7 @@ app.route('/user/new')
                         title: 'Username Error',
                         message: 'Username already taken'
                     },
-                active3:'active'
+                active5:'active'
             })
         }
         else if (useremail !== undefined){
@@ -186,7 +240,7 @@ app.route('/user/new')
                         title: 'Email Error',
                         message: 'Email has already been registered'
                     },
-                active3:'active'
+                active5:'active'
             })
         }
         else {
@@ -217,7 +271,7 @@ app.route('/user/:username')
             if(update === true) {
                 update = false;
                 res.render('user', {
-                    active:'active',
+                    active6:'active',
                     loggedIn: {
 
                     },
@@ -234,7 +288,7 @@ app.route('/user/:username')
             else if(loggedin ===true) {
                 loggedin = false;
                 res.render('user', {
-                    active:'active',
+                    active6:'active',
                     loggedIn: {
                     },
                     alert: {
@@ -249,7 +303,7 @@ app.route('/user/:username')
             }
             else {
                 res.render('user', {
-                    active:'active',
+                    active6:'active',
                     loggedIn: {
                     },
                     username:user1.username,
@@ -295,7 +349,7 @@ app.route('/user/:username')
             }
             else {
                 res.status(401).render('user', {
-                    active:'active',
+                    active6:'active',
                     loggedIn: {
                     },
                     usererror:'That username is already taken',
@@ -319,12 +373,80 @@ app.route('/user/:username')
             update = true;
             req.session.userId = req.body.username;
             res.redirect('/user/' + req.body.username); 
-        }
-       
-                  
+        }        
 }); 
+app.route('/edit')  
 
-
+.get((req, res) => { 
+    const userId = req.session.userId;
+    if(userId === undefined) {
+       loginError = true; 
+       res.redirect('/login');
+    }
+    else {
+        res.render('edit', {
+            loggedIn: {
+            },
+            active5:'active'
+        })
+    }
+   
+})
+       .post((req, res) => {   // some debug info  
+         
+        created = false;
+        console.log(req.body); 
+        const user = data.get(req.body.username);
+        const useremail = data.get(req.body.email);
+        if(req.body.pass1 !== req.body.pass2) {
+            res.status(400).render('new', {
+                loggedIn: {
+                },
+                alert: {
+                        level: 'danger',
+                        title: 'Password Error',
+                        message: 'Passwords do not match'
+                    },
+                active5:'active'
+            })
+        }
+        else if (user !== undefined){
+            res.status(400).render('new', {
+                loggedIn: {
+                },
+                alert: {
+                        level: 'warning',
+                        title: 'Username Error',
+                        message: 'Username already taken'
+                    },
+                active5:'active'
+            })
+        }
+        else if (useremail !== undefined){
+            res.status(400).render('new', {
+                loggedIn: {
+                },
+                alert: {
+                        level: 'warning',
+                        title: 'Email Error',
+                        message: 'Email has already been registered'
+                    },
+                active5:'active'
+            })
+        }
+        else {
+            data.set(req.body.username, {
+                UUID: uuid.v1(),
+                username: req.body.username,
+                email: req.body.email,
+                password: req.body.pass1,
+                phoneNum: req.body.phone
+            })
+            created = true;
+           res.redirect('/new');
+            
+        }      
+}); 
 
 
 app.get('*', function(req, res){
