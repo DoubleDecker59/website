@@ -24,15 +24,18 @@ const handlebars_inst = handlebars.create({
     layoutsDir: path.join(__dirname, 'views', 'layouts'),
     partialsDir: path.join(__dirname, 'views', 'partials')
 });
+app.use("/views",express.static(__dirname+"/views"))
+console.log(__dirname+"/views")
 app.engine('handlebars', handlebars_inst.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname,'views', 'pages'));
 let created = false;
-let loggedin = false;
+let userLoggedIn = false;
 const data = new conf();
 
 let loginError;
 let update = false;
+
 app.use(express.json()); 
  //REDIRECTS
 app.use(express.urlencoded({   extended: false })); 
@@ -44,6 +47,7 @@ app.get('/user', (reg,res) => {
 }); 
 app.get('/logout', (req,res) => {
     req.session.destroy();
+    userLoggedIn = false;
     res.redirect('/home')
 }); 
 app.get('/user', (req,res) => {
@@ -54,41 +58,54 @@ app.route('/home')
 .get((req, res) => { 
   res.status(200);
   res.render('home', {
+    loggedIn: userLoggedIn,
   active1:'active',
+      })          
+}); 
+
+app.route('/space')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('space', {
+    loggedIn: userLoggedIn,
+  active7:'active',
+      })          
+}); 
+app.route('/farm')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('farm', {
+    loggedIn: userLoggedIn,
+  active7:'active',
+      })          
+}); 
+app.route('/tower')  
+.get((req, res) => { 
+  res.status(200);
+  res.render('tower', {
+    loggedIn: userLoggedIn,
+  active7:'active',
       })          
 }); 
 app.route('/games')  
 .get((req, res) => { 
   res.status(200);
   res.render('games', {
+    loggedIn: userLoggedIn,
   active7:'active',
       })          
 }); 
-app.route('/games/space')  
+let redirect;
+app.route('/games/:redirect')  
 .get((req, res) => { 
-  res.status(200);
-  res.render('space', {
-  active7:'active',
-      })          
-}); 
-app.route('/games/farm')  
-.get((req, res) => { 
-  res.status(200);
-  res.render('farm', {
-  active7:'active',
-      })          
-}); 
-app.route('/games/tower')  
-.get((req, res) => { 
-  res.status(200);
-  res.render('tower', {
-  active7:'active',
-      })          
+  redirect = req.params.redirect;
+  res.redirect('/'+redirect);    
 }); 
 app.route('/about')  
 .get((req, res) => { 
   res.status(200);
   res.render('about', {
+    loggedIn: userLoggedIn,
   active2:'active',
       })          
 }); 
@@ -102,8 +119,7 @@ app.route('/files')
     }
     else {
         res.render('edit', {
-            loggedIn: {
-            },
+            loggedIn: userLoggedIn,
             active4:'active'
         })
     }
@@ -164,9 +180,9 @@ app.route('/login')
         }
         else {
             req.session.userId = user.username;
-            loggedin = true;
+            userLoggedIn = true;
             console.log("Username: " + user.username);
-            res.redirect('/user/' + user.username); 
+            res.redirect('/home'); 
         }
        
 }); 
@@ -181,8 +197,7 @@ app.route('/new')
     else if(created === true) {
         created =  false;
         res.render('login', {
-            loggedIn:{
-            },
+            loggedIn:userLoggedIn,
             alert: {
                     level: 'success',
                     title: 'Account Created',
@@ -194,8 +209,7 @@ app.route('/new')
     else {
         created = false;
         res.render('new', {
-            loggedIn: {
-            },
+            loggedIn: userLoggedIn,
             active5:'active'
         })
     }
@@ -233,8 +247,7 @@ app.route('/new')
         }
         else if (useremail !== undefined){
             res.status(400).render('new', {
-                loggedIn: {
-                },
+                loggedIn: userLoggedIn,
                 alert: {
                         level: 'warning',
                         title: 'Email Error',
@@ -272,9 +285,7 @@ app.route('/user/:username')
                 update = false;
                 res.render('user', {
                     active6:'active',
-                    loggedIn: {
-
-                    },
+                    loggedIn: userLoggedIn,
                     alert: {
                         level: 'success',
                         title: 'Updated Infomation',
@@ -285,12 +296,12 @@ app.route('/user/:username')
                     phone: user1.phoneNum
                 });
             }
-            else if(loggedin ===true) {
-                loggedin = false;
+            else if(userLoggedIn ===true) {
+                //TODO: Edit this logic 
+                userLoggedIn = false;
                 res.render('user', {
                     active6:'active',
-                    loggedIn: {
-                    },
+                    loggedIn: userLoggedIn,
                     alert: {
                         level: 'success',
                         title: 'Logged In',
@@ -304,8 +315,7 @@ app.route('/user/:username')
             else {
                 res.render('user', {
                     active6:'active',
-                    loggedIn: {
-                    },
+                    loggedIn: userLoggedIn,
                     username:user1.username,
                     email: user1.email,
                     phone: user1.phoneNum
@@ -350,8 +360,7 @@ app.route('/user/:username')
             else {
                 res.status(401).render('user', {
                     active6:'active',
-                    loggedIn: {
-                    },
+                    loggedIn: userLoggedIn,
                     usererror:'That username is already taken',
                     username: user2.username,
                     email: user1.email,
@@ -385,8 +394,7 @@ app.route('/edit')
     }
     else {
         res.render('edit', {
-            loggedIn: {
-            },
+            loggedIn: userLoggedIn,
             active5:'active'
         })
     }
@@ -400,8 +408,7 @@ app.route('/edit')
         const useremail = data.get(req.body.email);
         if(req.body.pass1 !== req.body.pass2) {
             res.status(400).render('new', {
-                loggedIn: {
-                },
+                loggedIn: userLoggedIn,
                 alert: {
                         level: 'danger',
                         title: 'Password Error',
@@ -412,8 +419,7 @@ app.route('/edit')
         }
         else if (user !== undefined){
             res.status(400).render('new', {
-                loggedIn: {
-                },
+                loggedIn: userLoggedIn,
                 alert: {
                         level: 'warning',
                         title: 'Username Error',
@@ -424,8 +430,7 @@ app.route('/edit')
         }
         else if (useremail !== undefined){
             res.status(400).render('new', {
-                loggedIn: {
-                },
+                loggedIn: userLoggedIn,
                 alert: {
                         level: 'warning',
                         title: 'Email Error',
