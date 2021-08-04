@@ -31,9 +31,11 @@ app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname,'views', 'pages'));
 let created = false;
 const data = new conf();
-
+let four = false;
+let success = false;
 let loginError;
 let update = false;
+let createdName;
 
 app.use(express.json()); 
  //REDIRECTS
@@ -54,18 +56,24 @@ app.get('/user', (req,res) => {
 //SIMPLE ROUTES - NO ACCESS REQUIRED
 app.route('/home')  
 .get((req, res) => { 
-  res.status(200);
-  res.render('home', {
-    loggedIn: validateSession(),
-  active1:'active',
-      })          
+  if(four) {
+   four=false;
+   handleRender(res,req,404,'home', true, 'danger','Unknown Page','Navigating you back to home', 'active1');
+  }
+ else if (success) {
+  success = false;
+  handleRender(res,req,200,'home', true, 'info','Success','You have successfully logged in!', 'active1');
+ }
+ else {
+  handleRender(res,req,200,'home', false, '','','', 'active1');
+ }      
 }); 
 
 app.route('/space')  
 .get((req, res) => { 
   res.status(200);
   res.render('space', {
-    loggedIn: validateSession(),
+    loggedIn: validateSession(req),
     active7:'active',
       })          
 }); 
@@ -73,7 +81,7 @@ app.route('/farm')
 .get((req, res) => { 
   res.status(200);
   res.render('farm', {
-    loggedIn: validateSession(),
+    loggedIn: validateSession(req),
   active7:'active',
       })          
 }); 
@@ -81,7 +89,7 @@ app.route('/tower')
 .get((req, res) => { 
   res.status(200);
   res.render('tower', {
-    loggedIn: validateSession(),
+    loggedIn: validateSession(req),
   active7:'active',
       })          
 }); 
@@ -89,7 +97,7 @@ app.route('/games')
 .get((req, res) => { 
   res.status(200);
   res.render('games', {
-    loggedIn: validateSession(),
+    loggedIn: validateSession(req),
   active7:'active',
       })          
 }); 
@@ -103,20 +111,20 @@ app.route('/about')
 .get((req, res) => { 
   res.status(200);
   res.render('about', {
-    loggedIn: validateSession(),
+    loggedIn: validateSession(req),
   active2:'active',
       })          
 }); 
 app.route('/files')  
 
 .get((req, res) => {
-    if(validateSession()) {
+    if(validateSession(req)) {
        loginError = true; 
        res.redirect('/login');
     }
     else {
         res.render('files', {
-            loggedIn: validateSession(),
+            loggedIn: validateSession(req),
             active4:'active'
         })
     }
@@ -126,17 +134,10 @@ app.route('/files')
 //COMPLICATED ROUTES - ACCESS OF SOME KIND REQUIRED
 app.route('/login')  
 .get((req, res) => { 
- if(validateSession()) {
+ if(validateSession(req)) {
     if (loginError === true) {
         loginError = false;
-        res.render('login', {
-            alert: {
-                    level: 'warning',
-                    title: 'Authenitcation Error',
-                    message: 'You must be logged in to create a new user'
-                },
-            active3:'active'
-        })
+     handleRender(res,req,301,'login', true, 'warning','Authenitcation Error','You must be logged in to create a new user', 'active3');
     }
     else {
         res.status(200);
@@ -155,24 +156,10 @@ app.route('/login')
         invalidAccess = false;
         const user = data.get(req.body.username);
         if(user === undefined) {
-            res.status(401).render('login', {
-                alert: {
-                        level: 'danger',
-                        title: 'Login Error',
-                        message: 'Incorrect Username or Password'
-                    },
-                active3:'active'
-            })
+          handleRender(res,req,401,'login', true, 'danger','Login Error','Incorrect Username or Password', 'active3');
         }
         else if(user.password !== req.body.password) {
-            res.status(401).render('login', {
-                alert: {
-                        level: 'danger',
-                        title: 'Login Error',
-                        message: 'Incorrect Username or Password'
-                    },
-                active2:'active'
-            })
+          handleRender(res,req,401,'login', true, 'danger','Login Error','Incorrect Username or Password', 'active3');
         }
         else {
             req.session.userId = user.username;
@@ -191,20 +178,12 @@ app.route('/new')
     }
     else if(created === true) {
         created =  false;
-        res.render('login', {
-            loggedIn:validateSession(),
-            alert: {
-                    level: 'success',
-                    title: 'Account Created',
-                    message: 'You have successfully created your account'
-                },
-            active5:'active'
-        })
+     handleRender(res,req,200,'new', true, 'success','Account Created','You have successfully created: ' + createdName, 'active5');
     }
     else {
         created = false;
         res.render('new', {
-            loggedIn: validateSession(),
+            loggedIn: validateSession(req),
             active5:'active'
         })
     }
@@ -217,39 +196,13 @@ app.route('/new')
         const user = data.get(req.body.username);
         const useremail = data.get(req.body.email);
         if(req.body.pass1 !== req.body.pass2) {
-            res.status(400).render('new', {
-                loggedIn: {
-                },
-                alert: {
-                        level: 'danger',
-                        title: 'Password Error',
-                        message: 'Passwords do not match'
-                    },
-                active5:'active'
-            })
+         handleRender(res,req,400,'new', true, 'danger','Password Error','Passwords do not match', 'active5');
         }
         else if (user !== undefined){
-            res.status(400).render('new', {
-                loggedIn: {
-                },
-                alert: {
-                        level: 'warning',
-                        title: 'Username Error',
-                        message: 'Username already taken'
-                    },
-                active5:'active'
-            })
+         handleRender(res,req,404,'new', true, 'warning','Username Error','Username already taken', 'active5');
         }
         else if (useremail !== undefined){
-            res.status(400).render('new', {
-                loggedIn: validateSession(),
-                alert: {
-                        level: 'warning',
-                        title: 'Email Error',
-                        message: 'Email has already been registered'
-                    },
-                active5:'active'
-            })
+         handleRender(res,req,400,'new', true, 'warning','Email Error','Email has already been registered', 'active5');
         }
         else {
             data.set(req.body.username, {
@@ -260,6 +213,7 @@ app.route('/new')
                 phoneNum: req.body.phone
             })
             created = true;
+            createdName = req.body.username;
            res.redirect('/new');
             
         }
@@ -280,7 +234,7 @@ app.route('/user/:username')
                 update = false;
                 res.render('user', {
                     active6:'active',
-                    loggedIn: validateSession(),
+                    loggedIn: validateSession(req),
                     alert: {
                         level: 'success',
                         title: 'Updated Infomation',
@@ -291,12 +245,11 @@ app.route('/user/:username')
                     phone: user1.phoneNum
                 });
             }
-            else if(userLoggedIn ===true) {
+            else if(validateSession(req)) {
                 //TODO: Edit this logic 
-                userLoggedIn = false;
                 res.render('user', {
                     active6:'active',
-                    loggedIn: validateSession(),
+                    loggedIn: validateSession(req),
                     alert: {
                         level: 'success',
                         title: 'Logged In',
@@ -310,7 +263,7 @@ app.route('/user/:username')
             else {
                 res.render('user', {
                     active6:'active',
-                    loggedIn: validateSession(),
+                    loggedIn: validateSession(req),
                     username:user1.username,
                     email: user1.email,
                     phone: user1.phoneNum
@@ -321,6 +274,9 @@ app.route('/user/:username')
             res.status(301).redirect('/login');
         }
         else {
+         //Edit this: Admin should be able to access profiles not his own and edit them as he see fit with permissions. 
+         //Part of a larger project to better implement permissions to access certain pages.
+         //Todo: Plan out different permission levels
             res.status(301).send('Access denied you may not view that page');
         }
     }
@@ -355,7 +311,7 @@ app.route('/user/:username')
             else {
                 res.status(401).render('user', {
                     active6:'active',
-                    loggedIn: validateSession(),
+                    loggedIn: validateSession(req),
                     usererror:'That username is already taken',
                     username: user2.username,
                     email: user1.email,
@@ -383,13 +339,13 @@ app.route('/edit')
 
 .get((req, res) => { 
     const userId = req.session.userId;
-    if(userId === undefined) {
+    if(validateSession(req)) {
        loginError = true; 
        res.redirect('/login');
     }
     else {
         res.render('edit', {
-            loggedIn: validateSession(),
+            loggedIn: validateSession(req),
             active5:'active'
         })
     }
@@ -403,7 +359,7 @@ app.route('/edit')
         const useremail = data.get(req.body.email);
         if(req.body.pass1 !== req.body.pass2) {
             res.status(400).render('new', {
-                loggedIn: validateSession(),
+                loggedIn: validateSession(req),
                 alert: {
                         level: 'danger',
                         title: 'Password Error',
@@ -414,7 +370,7 @@ app.route('/edit')
         }
         else if (user !== undefined){
             res.status(400).render('new', {
-                loggedIn: validateSession(),
+                loggedIn: validateSession(req),
                 alert: {
                         level: 'warning',
                         title: 'Username Error',
@@ -425,7 +381,7 @@ app.route('/edit')
         }
         else if (useremail !== undefined){
             res.status(400).render('new', {
-                loggedIn: validateSession(),
+                loggedIn: validateSession(req),
                 alert: {
                         level: 'warning',
                         title: 'Email Error',
@@ -450,13 +406,15 @@ app.route('/edit')
 
 
 app.get('*', function(req, res){
-        res.status(404).send('Error 404: Unknown Page/Resource not found');
+        four = true;
+        res.status(404).redirect('/home');
+        
   });
 
-function handleRender(statusNum, page, alert, level, title, msg, active) {
+function handleRender(res,req, statusNum, page, alert, level, title, msg, active) {
   if(alert) {
    res.status(statusNum).render(page, {
-                loggedIn: validateSession(),
+                loggedIn: validateSession(req),
                 alert: {
                         level: level,
                         title: title,
@@ -465,16 +423,14 @@ function handleRender(statusNum, page, alert, level, title, msg, active) {
                 active:'active'
             })
         }
-  }
  else{
     res.status(statusNum).render(page, {
-                loggedIn: validateSession(),
+                loggedIn: validateSession(req),
                 active:'active'
             })
         }
     }
-}
-function validateSession() {
+function validateSession(req) {
  var sess = req.session;
  if(sess.userId) {
   return true;
