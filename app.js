@@ -294,10 +294,10 @@ app.route('/user/:username')
        // const user2 = data.get(req.body.username);
         if(user1.password !== req.body.pass3) {
             //REJECT invalid current password
-         handleRender(res,req,400,'new', true, 'danger','Password Error','Current password incorrect', 'active5');
+         handleRender(res,req,400,'user', true, 'danger','Password Error','Current password incorrect', 'active5');
         }
         else if(req.body.pass1 !== req.body.pass2) {
-            handleRender(res,req,400,'new', true, 'danger','Password Error','Passwords do not match', 'active5');
+            handleRender(res,req,400,'user', true, 'danger','Password Error','Passwords do not match', 'active5');
         }
         else{
             data.set(user1, {
@@ -362,6 +362,10 @@ app.route('/edit')
        res.redirect('/login');
     }
     else {
+			var list = document.getElementById("list");
+			for(i = 0; i< data.size; i++) {
+				list.innerHTML +="<a href=\"edit\""user.username"\" class=\"list-group-item list-group-item-action\">"user.username"</a>"
+			}
 							if(user.permissions.all || user.permissions.edit) {
 								res.render('edit', {
             loggedIn: validateSession(req),
@@ -374,60 +378,126 @@ app.route('/edit')
 							}
     }
    
-})
-       .post((req, res) => {   // some debug info  
-         
-        created = false;
-        console.log(req.body); 
-        const user = data.get(req.body.username);
-        const useremail = data.get(req.body.email);
-        if(req.body.pass1 !== req.body.pass2) {
-            res.status(400).render('new', {
-                loggedIn: validateSession(req),
-                alert: {
-                        level: 'danger',
-                        title: 'Password Error',
-                        message: 'Passwords do not match'
+});
+let user1;
+app.route('/edit/:username')  
+.get((req, res) => { 
+    const userId = req.session.userId;
+    user1 = findIdbyUser(req.params.username);
+    console.log(user1);
+    console.log(userId)
+    if(user1 !== -1)  {
+        if(userId === user1.username) {
+            if(update === true) {
+                update = false;
+                res.render('user', {
+                    active6:'active',
+                    loggedIn: validateSession(req),
+                    alert: {
+                        level: 'success',
+                        title: 'Updated Infomation',
+                        message: 'Your profile information has been updated '
                     },
-                active5:'active'
-            })
+                    username:user1.username,
+                    permissions: {
+                       all: user1.permissions.all,
+                       new: user1.permissions.new,
+                       edit: user1.permissions.edit,
+                       files: user1.permissions.files  
+                    }
+                });
+            }
+            else {
+                res.render('user', {
+                    active6:'active',
+                    loggedIn: validateSession(req),
+                    username:user1.username,
+																	permissions: {
+                       all: user1.permissions.all,
+                       new: user1.permissions.new,
+                       edit: user1.permissions.edit,
+                       files: user1.permissions.files  
+                    }
+                });
+            }
         }
-        else if (user !== undefined){
-            res.status(400).render('new', {
-                loggedIn: validateSession(req),
-                alert: {
-                        level: 'warning',
-                        title: 'Username Error',
-                        message: 'Username already taken'
-                    },
-                active5:'active'
-            })
-        }
-        else if (useremail !== undefined){
-            res.status(400).render('new', {
-                loggedIn: validateSession(req),
-                alert: {
-                        level: 'warning',
-                        title: 'Email Error',
-                        message: 'Email has already been registered'
-                    },
-                active5:'active'
-            })
+        else if(userId === undefined) {
+            res.status(301).redirect('/login');
         }
         else {
-            data.set(req.body.username, {
-                UUID: uuid.v1(),
-                username: req.body.username,
-                email: req.body.email,
-                password: req.body.pass1,
-                phoneNum: req.body.phone
-            })
-            created = true;
-           res.redirect('/new');
-            
-        }      
-}); 
+         //Edit this: Admin should be able to access profiles not his own and edit them as he see fit with permissions. 
+         //Part of a larger project to better implement permissions to access certain pages.
+         //Todo: Plan out different permission levels
+            res.status(301).send('Access denied you may not view that page');
+        }
+    }
+     else  {
+        res.status(404).send('Error 404: Unknown Page/Resource not found');
+        }
+  
+})
 
+       .post((req, res) => {   // some debug info   
+        user1 = findIdbyUser(req.params.username);
+        console.log(user1.username);
+				user2 = req.session.userId;
+       // const user2 = data.get(req.body.username);
+        if(user2.password !== req.body.pass3) {
+            //REJECT invalid current password
+          res.render('user', {
+                    active6:'active',
+                    loggedIn: validateSession(req),
+                    alert: {
+                        level: 'danger',
+                        title: 'Password error',
+                        message: 'Your current password is incorrect'
+                    },
+                    username:user1.username,
+                    permissions: {
+                       all: user1.permissions.all,
+                       new: user1.permissions.new,
+                       edit: user1.permissions.edit,
+                       files: user1.permissions.files  
+                    }
+                });
+        }
+        else if(req.body.pass1 !== req.body.pass2) {
+            handleRender(res,req,400,'new', true, 'danger','Password Error','Passwords do not match', 'active5');
+					 res.render('user', {
+                    active6:'active',
+                    loggedIn: validateSession(req),
+                    alert: {
+                        level: 'danger',
+                        title: 'Password error',
+                        message: 'Passwords do not match'
+                    },
+                    username:user1.username,
+                    permissions: {
+                       all: user1.permissions.all,
+                       new: user1.permissions.new,
+                       edit: user1.permissions.edit,
+                       files: user1.permissions.files  
+                    }
+                });
+        }
+        else{
+            data.set(user1, {
+                    UUID: user1.UUID,
+                    username: user1.username,
+                    password: req.body.pass1,
+															permissions: {
+                       all: req.body.all,
+                       new: req.body.new,
+                       edit: req.body.edit,
+                       files: req.body.files  
+                    }
+        })
+			}																		
+     
+            update = true;
+            res.redirect('/edit/'); 
+               
+});   
 
 app.get('*', function(req, res){
         four = true;
