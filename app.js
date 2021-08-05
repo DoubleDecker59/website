@@ -243,6 +243,7 @@ app.route('/user/:username')
                 update = false;
                 res.render('user', {
                     active6:'active',
+										disabled:'disabled',
                     loggedIn: validateSession(req),
                     alert: {
                         level: 'success',
@@ -261,6 +262,7 @@ app.route('/user/:username')
             else {
                 res.render('user', {
                     active6:'active',
+										disabled:'disabled',
                     loggedIn: validateSession(req),
                     username:user1.username,
 																	permissions: {
