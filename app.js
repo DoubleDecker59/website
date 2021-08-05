@@ -43,16 +43,18 @@ app.use(express.urlencoded({   extended: false }));
 app.get('/', (reg,res) => {
     res.redirect('/home'); 
 }); 
-app.get('/user', (reg,res) => {
+/*app.get('/user', (reg,res) => {
     res.redirect('/user'); 
-}); 
+}); */
 app.get('/logout', (req,res) => {
     req.session.destroy();
     res.redirect('/home')
 }); 
+
 app.get('/user', (req,res) => {
     res.redirect('/user/' + req.session.userId)
 });
+
 //SIMPLE ROUTES - NO ACCESS REQUIRED
 app.route('/home')  
 .get((req, res) => { 
@@ -134,10 +136,10 @@ app.route('/files')
 //COMPLICATED ROUTES - ACCESS OF SOME KIND REQUIRED
 app.route('/login')  
 .get((req, res) => { 
- if(validateSession(req)) {
+ if(!validateSession(req)) {
     if (loginError === true) {
         loginError = false;
-     handleRender(res,req,301,'login', true, 'warning','Authenitcation Error','You must be logged in to create a new user', 'active3');
+     handleRender(res,req,301,'login', true, 'warning','Authentication Error','You must be logged in to create a new user', 'active3');
     }
     else {
         res.status(200);
@@ -164,12 +166,13 @@ app.route('/login')
         else {
             req.session.userId = user.username;
             console.log("Username: " + user.username);
+            success = true;
             res.redirect('/home'); 
         }
        
 }); 
 app.route('/new')  
-
+//EDIT NEW TO REFLECT NOT NEEDING EMAIL OR PHONE NUMBER JUST PASSWORD. ALSO CONSIDER PASSWORD RESET METHODS
 .get((req, res) => { 
     const userId = req.session.userId;
     if(userId === undefined) {
@@ -245,28 +248,11 @@ app.route('/user/:username')
                     phone: user1.phoneNum
                 });
             }
-            else if(validateSession(req)) {
-                //TODO: Edit this logic 
-                res.render('user', {
-                    active6:'active',
-                    loggedIn: validateSession(req),
-                    alert: {
-                        level: 'success',
-                        title: 'Logged In',
-                        message: 'You successfully logged in'
-                    },
-                    username:user1.username,
-                    email: user1.email,
-                    phone: user1.phoneNum
-                });
-            }
             else {
                 res.render('user', {
                     active6:'active',
                     loggedIn: validateSession(req),
                     username:user1.username,
-                    email: user1.email,
-                    phone: user1.phoneNum
                 });
             }
         }
@@ -290,7 +276,16 @@ app.route('/user/:username')
         user1 = data.get(req.params.username);
         console.log(user1.username);
         const user2 = data.get(req.body.username);
-        
+        if(user1.password !== req.body.pass3) {
+            //REJECT invalid current password
+        }
+        else if(req.body.pass1 !== req.body.pass2) {
+            //REJECT passwords do not match
+        }
+        else{
+            //ACCEPT
+        }
+        /*
         if(user2 !== undefined) {
             console.log(user1.username+ user2.username);
             if (user1.username === user2.username)
@@ -328,18 +323,20 @@ app.route('/user/:username')
                 password: user1.password,
                 phoneNum: req.body.phone
             })
+            */
             data.delete(req.params.username);
             console.log(data.get(user1.username));
             update = true;
             req.session.userId = req.body.username;
             res.redirect('/user/' + req.body.username); 
-        }        
+               
 }); 
 app.route('/edit')  
-
+//Learn how to get all users, change schema for storing users possibly
 .get((req, res) => { 
     const userId = req.session.userId;
-    if(validateSession(req)) {
+    console.log(validateSession(req));
+    if(!validateSession(req)) {
        loginError = true; 
        res.redirect('/login');
     }
@@ -411,7 +408,7 @@ app.get('*', function(req, res){
         
   });
 
-function handleRender(res,req, statusNum, page, alert, level, title, msg, active) {
+function handleRender(res,req, statusNum, page, alert, level, title, msg, activeNum) {
   if(alert) {
    res.status(statusNum).render(page, {
                 loggedIn: validateSession(req),
@@ -420,19 +417,19 @@ function handleRender(res,req, statusNum, page, alert, level, title, msg, active
                         title: title,
                         message: msg
                     },
-                active:'active'
+                [activeNum]:'active'
             })
         }
  else{
     res.status(statusNum).render(page, {
                 loggedIn: validateSession(req),
-                active:'active'
+                [activeNum]:'active'
             })
         }
     }
 function validateSession(req) {
  var sess = req.session;
- if(sess.userId) {
+ if(sess.userId !== undefined) {
   return true;
  }
  else{
