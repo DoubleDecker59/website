@@ -156,8 +156,8 @@ app.route('/login')
        .post((req, res) => {   // some debug info   
         console.log(req.body); 
         invalidAccess = false;
-        const user = data.get(req.body.username);
-        if(user === undefined) {
+        const user = findIdbyUser(req.body.username);
+        if(user === -1) {
           handleRender(res,req,401,'login', true, 'danger','Login Error','Incorrect Username or Password', 'active3');
         }
         else if(user.password !== req.body.password) {
@@ -174,8 +174,8 @@ app.route('/login')
 app.route('/new')  
 //EDIT NEW TO REFLECT NOT NEEDING EMAIL OR PHONE NUMBER JUST PASSWORD. ALSO CONSIDER PASSWORD RESET METHODS
 .get((req, res) => { 
-    const userId = req.session.userId;
-    if(userId === undefined) {
+    const userId = findIdbyUser(req.body.username);
+    if(userId === -1) {
        loginError = true; 
        res.redirect('/login');
     }
@@ -184,36 +184,42 @@ app.route('/new')
      handleRender(res,req,200,'new', true, 'success','Account Created','You have successfully created: ' + createdName, 'active5');
     }
     else {
-        created = false;
-        res.render('new', {
+     created = false;
+      if(userId.all || userId.new) {
+       res.render('new', {
             loggedIn: validateSession(req),
             active5:'active'
         })
+      }
+        else {   
+         //TOOD: add flag for permission errors
+         res.redirect('/home');
+        }
     }
-   
 })
        .post((req, res) => {   // some debug info  
          
         created = false;
         console.log(req.body); 
-        const user = data.get(req.body.username);
-        const useremail = data.get(req.body.email);
+        const user = findIdbyUser(req.body.username);
+        //const useremail = data.get(req.body.email);
         if(req.body.pass1 !== req.body.pass2) {
          handleRender(res,req,400,'new', true, 'danger','Password Error','Passwords do not match', 'active5');
         }
-        else if (user !== undefined){
+        else if (user !== -1){
          handleRender(res,req,404,'new', true, 'warning','Username Error','Username already taken', 'active5');
         }
-        else if (useremail !== undefined){
-         handleRender(res,req,400,'new', true, 'warning','Email Error','Email has already been registered', 'active5');
-        }
         else {
-            data.set(req.body.username, {
-                UUID: uuid.v1(),
+            data.set(data.size+1, {
+                 UUID: uuid.v1(),
                 username: req.body.username,
-                email: req.body.email,
                 password: req.body.pass1,
-                phoneNum: req.body.phone
+                permissions: {
+                     all: req.body.all,
+                     new: req.body.new,
+                     edit: req.body.edit,
+                     files: req.body.files
+                }
             })
             created = true;
             createdName = req.body.username;
@@ -228,10 +234,10 @@ let user1;
 app.route('/user/:username')  
 .get((req, res) => { 
     const userId = req.session.userId;
-    user1 = data.get(req.params.username);
+    user1 = findIdbyUser(req.params.username);
     console.log(user1);
     console.log(userId)
-    if(user1 !== undefined)  {
+    if(user1 !== -1)  {
         if(userId === user1.username) {
             if(update === true) {
                 update = false;
@@ -244,8 +250,12 @@ app.route('/user/:username')
                         message: 'Your profile information has been updated '
                     },
                     username:user1.username,
-                    email: user1.email,
-                    phone: user1.phoneNum
+                    permissions: {
+                       all: user1.permissions.all,
+                       new: user1.permissions.new,
+                       edit: user1.permissions.edit,
+                       files: user1.permissions.files  
+                    }
                 });
             }
             else {
@@ -253,6 +263,12 @@ app.route('/user/:username')
                     active6:'active',
                     loggedIn: validateSession(req),
                     username:user1.username,
+																	permissions: {
+                       all: user1.permissions.all,
+                       new: user1.permissions.new,
+                       edit: user1.permissions.edit,
+                       files: user1.permissions.files  
+                    }
                 });
             }
         }
@@ -273,30 +289,36 @@ app.route('/user/:username')
 })
 
        .post((req, res) => {   // some debug info   
-        user1 = data.get(req.params.username);
+        user1 = findIdbyUser(req.params.username);
         console.log(user1.username);
-        const user2 = data.get(req.body.username);
+       // const user2 = data.get(req.body.username);
         if(user1.password !== req.body.pass3) {
             //REJECT invalid current password
+         handleRender(res,req,400,'new', true, 'danger','Password Error','Current password incorrect', 'active5');
         }
         else if(req.body.pass1 !== req.body.pass2) {
-            //REJECT passwords do not match
+            handleRender(res,req,400,'new', true, 'danger','Password Error','Passwords do not match', 'active5');
         }
         else{
-            //ACCEPT
-        }
+            data.set(user1, {
+                    UUID: user1.UUID,
+                    username: user1.username,
+                    password: req.body.pass1,
+															permissions: {
+                       all: req.body.all,
+                       new: req.body.new,
+                       edit: req.body.edit,
+                       files: req.body.files  
+                    }
+        })
+			}																		
         /*
         if(user2 !== undefined) {
             console.log(user1.username+ user2.username);
             if (user1.username === user2.username)
             {
     
-                data.set(req.body.username, {
-                    UUID: user1.UUID,
-                    username: req.body.username,
-                    email: req.body.email,
-                    password: user1.password,
-                    phoneNum: req.body.phone
+                
                 })
                 data.delete(user1);
                 console.log(data.get(user1.username));
@@ -324,27 +346,32 @@ app.route('/user/:username')
                 phoneNum: req.body.phone
             })
             */
-            data.delete(req.params.username);
-            console.log(data.get(user1.username));
             update = true;
-            req.session.userId = req.body.username;
             res.redirect('/user/' + req.body.username); 
                
 }); 
 app.route('/edit')  
 //Learn how to get all users, change schema for storing users possibly
+//Learn how to show all users dynamically, then navigate to the page: edit(select user) -> edit/:username(Actually edit the user)
 .get((req, res) => { 
     const userId = req.session.userId;
+				const user = data.get(userId);
     console.log(validateSession(req));
     if(!validateSession(req)) {
        loginError = true; 
        res.redirect('/login');
     }
     else {
-        res.render('edit', {
+							if(user.permissions.all || user.permissions.edit) {
+								res.render('edit', {
             loggedIn: validateSession(req),
             active5:'active'
         })
+							}
+       else {
+								//TODO add warning about permission
+								res.redirect('/home');
+							}
     }
    
 })
@@ -436,4 +463,27 @@ function validateSession(req) {
  return false;
  }
 }
+ function findIdbyUser(user) {
+  for (let i = 0; i <= data.size; i++) {
+  const idNum = data.get(i.user);
+  if(idNum !== undefined) {
+   return idNum;
+   }
+  }
+  return -1;
+ }
+ function firstRun() {
+  data.clear();
+  data.set(0, {
+                UUID: uuid.v1(),
+                username: 'admin',
+                password: 'password',
+                permissions: {
+                     all: true,
+                     new: true,
+                     edit: true,
+                     files: true
+                }
+            })
+ }
 app.listen(3000, function() { console.log("Listening on port 3000")}); 
