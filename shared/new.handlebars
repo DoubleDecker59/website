@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+
+  <body style="background-color: ghostwhite;">
+    <form method= "POST">
+      <div class="form-row col-7" style = "text-align: left;">
+      <div class="form-group col-md-5  align-items-right"> 
+        
+          <label for="inlineFormInputGroup">Username</label>
+          <div class="input-group mb-2">
+            <div class="input-group-prepend">
+              <div class="input-group-text">@</div>
+            </div>
+            <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username" name="username" required>
+        </div>          
+      </div>
+        <div class="form-group col-md-5">
+          <label for="exampleInputEmail1">Email address</label>
+          <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name = "email" required>
+          <small id="emailHelp" name="emailHelp" class="form-text text-muted">{{emailerror}}</small>
+        </div>
+        <div class="form-group col-md-5">
+          <label for="exampleInputPassword1">Password</label>
+          <input type="password" class="form-control" id="exampleInputPassword1" name="pass1" required>
+        </div>
+        <div class="form-group col-md-5">
+          <label for="exampleInputPassword2">Verify Password</label>
+          <input type="password" class="form-control" id="exampleInputPassword2" name="pass2" required>
+        </div>
+        <div class="form-group col-5">
+          <label for="phone">Phone Number</label> <br>
+          <input type="tel" id="phone" name="phone" placeholder="123-456-7890" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" required>
+        </div>
+        <div class = "col-12">
+          <button type="submit" class="btn btn-primary">Sign Up!</button>
+ 
+          </div>
+          
+      </form>
+      
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+   
+  </body>
+  
+</html>
