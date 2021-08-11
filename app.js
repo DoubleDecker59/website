@@ -209,10 +209,10 @@ app.route('/user/:username')
             if (userId === user1.username) {
                 if (update === true) {
                     update = false;
-                    handleRender(res, req, 200, 'user', true, 'success', 'Updated Infomation', 'Your profile information has been updated', 'active6','user1.username','user1.permissions.all','user1.permissions.new','user1.permissions.edit','user1.permissions.files','disabled');
+                    handleRender(res, req, 200, 'user', true, 'success', 'Updated Infomation', 'Your profile information has been updated', 'active6',user1.username,user1.permissions.all,user1.permissions.new,user1.permissions.edit,user1.permissions.files,'disabled');
                 }
                 else {
-                    handleRender(res, req, 200, 'user', false, '', '', '', 'active6','user1.username','user1.permissions.all','user1.permissions.new','user1.permissions.edit','user1.permissions.files','disabled');
+                    handleRender(res, req, 200, 'user', false, '', '', '', 'active6',user1.username,user1.permissions.all,user1.permissions.new,user1.permissions.edit,user1.permissions.files,'disabled');
                 }
             }
             else if (userId === undefined) {
@@ -294,10 +294,10 @@ app.route('/edit/:username')
             if (userId === user2.username || originalUser.permissions.all || originalUser.permissions.edit) {
                 if (update === true) {
                     update = false;
-                    handleRender(res, req, 200, 'user', true, 'success', 'Updated Infomation', 'Your profile information has been updated', 'active5','user2.username','user2.permissions.all','user2.permissions.new','user2.permissions.edit','user2.permissions.files','');
+                    handleRender(res, req, 200, 'user', true, 'success', 'Updated Infomation', 'Your profile information has been updated', 'active5',user2.username,user2.permissions.all,user2.permissions.new,user2.permissions.edit,user2.permissions.files,'');
                 }
                 else {
-                    handleRender(res, req, 200, 'user', false, '', '', '', 'active5','user2.username','user2.permissions.all','user2.permissions.new','user2.permissions.edit','user2.permissions.files','');
+                    handleRender(res, req, 200, 'user', false, '', '', '', 'active5',user2.username,user2.permissions.all,user2.permissions.new,user2.permissions.edit,user2.permissions.files,'');
                 }
             }
             else if (userId === undefined) {
@@ -320,10 +320,10 @@ app.route('/edit/:username')
         user2 = findIdbyUser(req.params.username);
         user3 = req.session.userId;
         if (user3.password !== req.body.pass3) {
-            handleRender(res, req, 200, 'user', true, 'danger', 'Password error', 'Your current password is incorrect', 'active6','user2.username','user2.permissions.all','user2.permissions.new','user2.permissions.edit','user2.permissions.files','');
+            handleRender(res, req, 200, 'user', true, 'danger', 'Password error', 'Your current password is incorrect', 'active6',user2.username,user2.permissions.all,user2.permissions.new,user2.permissions.edit,user2.permissions.files,'');
         }
         else if (req.body.pass1 !== req.body.pass2) {
-            handleRender(res, req, 400, 'new', true, 'danger', 'Password Error', 'Passwords do not match', 'active6','user2.username','user2.permissions.all','user2.permissions.new','user2.permissions.edit','user2.permissions.files','');
+            handleRender(res, req, 400, 'new', true, 'danger', 'Password Error', 'Passwords do not match', 'active6',user2.username,user2.permissions.all,user2.permissions.new,user2.permissions.edit,user2.permissions.files,'');
         }
         else {
             saveUser(user2,user2.UUID,user2.username,req.body.pass1,req.body.all,req.body.new,req.body.edit,req.body.files);
