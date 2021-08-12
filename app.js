@@ -36,6 +36,7 @@ let four = false;
 let success = false;
 let loginError;
 let update = false;
+let perms = false;
 let createdName;
 app.use(express.json());
 //REDIRECTS
@@ -63,6 +64,10 @@ app.route('/home')
             success = false;
             handleRender(res, req, 200, 'home', true, 'info', 'Success', 'You have successfully logged in!', 'active1','','','','','','');
         }
+        else if (perms) {
+            perms = false;
+            handleRender(res, req, 401, 'home', true, 'info', 'warning', 'You do not have permission to access that page, please contact the admin if you believe this to be an issue!', 'active1','','','','','','');
+        }
         else {
             handleRender(res, req, 200, 'home', false, '', '', '', 'active1','','','','','','');
         }
@@ -82,6 +87,14 @@ app.route('/farm')
         res.render('farm', {
             loggedIn: validateSession(req),
             active7: 'active',
+        })
+    });
+    app.route('/contact')
+    .get((req, res) => {
+        res.status(200);
+        res.render('contact', {
+            loggedIn: validateSession(req),
+            active8: 'active',
         })
     });
 app.route('/tower')
@@ -122,7 +135,7 @@ app.route('/login')
         if (!validateSession(req)) {
             if (loginError === true) {
                 loginError = false;
-                handleRender(res, req, 301, 'login', true, 'warning', 'Authentication Error', 'You must be logged in to create a new user', 'active3','','','','','','');
+                handleRender(res, req, 301, 'login', true, 'warning', 'Authentication Error', 'You must be logged in to access that page', 'active3','','','','','','');
             }
             else {
                 res.status(200);
@@ -177,6 +190,7 @@ app.route('/new')
             }
             else {
                 //TOOD: add flag for permission errors
+                perms=true;
                 res.redirect('/home');
             }
         }
@@ -222,11 +236,13 @@ app.route('/user/:username')
                 //Edit this: Admin should be able to access profiles not his own and edit them as he see fit with permissions. 
                 //Part of a larger project to better implement permissions to access certain pages.
                 //Todo: Plan out different permission levels
-                res.status(301).send('Access denied you may not view that page');
+                perms=true;
+                res.redirect('/home');
             }
         }
         else {
-            res.status(404).send('Error 404: Unknown Page/Resource not found');
+            four=true;
+            res.redirect('/home');
         }
 
     })
@@ -279,6 +295,7 @@ app.route('/edit')
             }
             else {
                 //TODO add warning about permission
+                perms=true;
                 res.redirect('/home');
             }
         }
@@ -307,11 +324,13 @@ app.route('/edit/:username')
                 //Edit this: Admin should be able to access profiles not his own and edit them as he see fit with permissions. 
                 //Part of a larger project to better implement permissions to access certain pages.
                 //Todo: Plan out different permission levels
-                res.status(301).send('Access denied you may not view that page');
+                perms=true;
+                res.redirect('/home');
             }
         }
         else {
-            res.status(404).send('Error 404: Unknown Page/Resource not found');
+            four=true;
+            res.redirect('/home');
         }
 
     })
@@ -336,17 +355,23 @@ app.route('/edit/:username')
     app.route('/files')
 
     .get((req, res) => {
+        const userId = req.session.userId;
+        originalUser = findIdbyUser(userId);
         if (!validateSession(req)) {
             loginError = true;
             res.redirect('/login');
         }
-        else {
+        else if(originalUser.permissions.all || originalUser.permissions.files) {
             var files = getSharedFiles();
             res.render('files', {
                 loggedIn: validateSession(req),
                 active4: 'active',
                 file: files
             })
+        }
+        else {
+            perms=true;
+            res.redirect('/home');
         }
 
     });
@@ -439,6 +464,7 @@ function findIdbyUser(user) {
 
 function firstRun() {
     data.clear();
+    console.log('Ran')
     data.set('0', {
         UUID: uuid.v1(),
         username: 'admin',
@@ -451,5 +477,5 @@ function firstRun() {
         }
     })
 }
- //firstRun();
+ firstRun();
 app.listen(3000, function () { console.log("Listening on port 3000") });
